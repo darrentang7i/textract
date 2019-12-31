@@ -35,12 +35,12 @@ for bucket in s3.buckets.all():
 docName = "example1.jpg"
 
 with open(docName, 'rb') as document:
-    imageBytes = bytearray(document.read())
+    imageBytes = bytearray(document.read().strip())
 
 textract = boto3.client('textract')
 
-response = textract.detect_document_text(Document={'Bytes': imageBytes})
+info = textract.detect_document_text(Document={'Bytes': imageBytes})
 
-for item in response["Blocks"]:
-    if item["BlockType"] == "LINE":
-        print ('\033[94m' +  item["Text"] + '\033[0m')
+for words in info["Blocks"]:
+    if words["BlockType"] == "LINE":
+        print (words["Text"])
