@@ -1,12 +1,46 @@
 import boto3
 
-s3 = boto3.resource('s3')
-s3client = boto3.client('s3')
-response = s3client.list_buckets()
+'''
+
+s3_connection = boto3.resource('s3')
+						
+s3_object = s3_connection.Object(textractproject,'')
+s3_response = s3_object.get()
+
+stream = io.BytesIO(s3_response['Body'].read())
+image=Image.open(stream)
+
+client = boto3.client('textract')
+
+image_binary = stream.getvalue()
+response = client.analyze_document(Document={'Bytes': image_binary},
+	FeatureTypes=["TABLES", "FORMS"])
+
+blocks = response['Blocks']
+print(blocks)
+
+
+for block in blocks:
+    if 'Text' in block:
+        print('    Detected: ' + block['Text'])
+
+
 
 for bucket in s3.buckets.all():
 	print(bucket.name)
 
-print("existing buckets")
-for bucket in response['Buckets']:
-	print(f' {bucket["Name"]}')
+'''
+
+
+docName = "example1.jpg"
+
+with open(docName, 'rb') as document:
+    imageBytes = bytearray(document.read())
+
+textract = boto3.client('textract')
+
+response = textract.detect_document_text(Document={'Bytes': imageBytes})
+
+for item in response["Blocks"]:
+    if item["BlockType"] == "LINE":
+        print ('\033[94m' +  item["Text"] + '\033[0m')
